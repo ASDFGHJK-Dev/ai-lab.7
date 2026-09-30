@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>暗纹模拟预览 · 七七的个人主页</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Noto Serif SC", "Source Han Serif SC", "STSong", "SimSun", Georgia, serif;
+    background: #f7f4ec;
+    color: #3d3a34;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ===== 四种暗纹（透明度已烘焙进纹样，均为"若有似无"档） ===== */
+  body.pat-huiwen {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M1 23 L1 1 L15 1 L15 9 L7 9 L7 5' fill='none' stroke='%23b9b2a2' stroke-opacity='0.30' stroke-width='1'/%3E%3C/svg%3E");
+  }
+  body.pat-yunwen {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cpath d='M6 34 c0-7 9-7 9 0 c0 5-7 6-9 2' fill='none' stroke='%23b9b2a2' stroke-opacity='0.32' stroke-width='1'/%3E%3Cpath d='M30 10 c0-7 9-7 9 0 c0 5-7 6-9 2' fill='none' stroke='%23b9b2a2' stroke-opacity='0.32' stroke-width='1'/%3E%3Cpath d='M18 42 q6 4 12 0' fill='none' stroke='%23b9b2a2' stroke-opacity='0.26' stroke-width='1'/%3E%3C/svg%3E");
+  }
+  body.pat-qushui {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='24'%3E%3Cpath d='M0 10 Q10 2 20 10 T40 10' fill='none' stroke='%23b9b2a2' stroke-opacity='0.32' stroke-width='1'/%3E%3Cpath d='M0 20 Q10 12 20 20 T40 20' fill='none' stroke='%23b9b2a2' stroke-opacity='0.22' stroke-width='1'/%3E%3C/svg%3E");
+  }
+  body.pat-jinge {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M0 0 H28 M0 14 H28 M0 0 V28 M14 0 V28' fill='none' stroke='%23c9c3b4' stroke-opacity='0.18' stroke-width='0.5'/%3E%3Cpath d='M14 11 l3 3 -3 3 -3 -3 z' fill='none' stroke='%23b9b2a2' stroke-opacity='0.30' stroke-width='1'/%3E%3C/svg%3E");
+  }
+
+  /* ===== 切换器 ===== */
+  .switcher {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(61,58,52,0.92);
+    padding: 10px 16px;
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .switcher button {
+    background: transparent; color: #d8d2c4;
+    border: 1px solid #6b675e; border-radius: 999px;
+    padding: 4px 14px; font-size: 13px; cursor: pointer;
+    font-family: inherit;
+  }
+  .switcher button.on { background: #9e3f3f; border-color: #9e3f3f; color: #f7f4ec; }
+  .switcher .tip { width: 100%; text-align: center; font-size: 11px; color: #9a958a; letter-spacing: 1px; }
+
+  .page { max-width: 640px; margin: 0 auto; padding: 48px 20px 64px; }
+
+  header { text-align: center; margin-bottom: 40px; position: relative; }
+  .seal {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 52px; height: 52px; border-radius: 8px;
+    background: #9e3f3f; color: #f7f4ec;
+    font-size: 24px; margin-bottom: 18px;
+  }
+  h1 { font-size: 30px; font-weight: 500; letter-spacing: 6px; margin-bottom: 10px; }
+  .signature { font-size: 14px; color: #8a857a; letter-spacing: 2px; }
+  .divider { width: 56px; height: 1px; background: #c9c3b4; margin: 26px auto 0; position: relative; }
+  .divider::after {
+    content: ""; position: absolute; left: 50%; top: -2.5px;
+    width: 6px; height: 6px; background: #9e3f3f; transform: translateX(-50%) rotate(45deg);
+  }
+
+  .cards { display: flex; flex-direction: column; gap: 18px; }
+  .card {
+    background: rgba(255,253,248,0.82);
+    border: 1px solid #e4ded0;
+    border-radius: 12px;
+    padding: 24px 22px;
+  }
+  .card h2 {
+    font-size: 17px; font-weight: 500; letter-spacing: 2px;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+  }
+  .tag { font-size: 11px; padding: 2px 10px; border-radius: 999px; letter-spacing: 1px;
+         font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .tag.blue  { background: #e6f1fb; color: #185fa5; }
+  .tag.purple{ background: #eeedfe; color: #534ab7; }
+  .tag.red   { background: #fcebeb; color: #a32d2d; }
+  .card p { font-size: 14px; color: #5c574d; }
+  .card p em { font-style: normal; color: #9e3f3f; }
+
+  footer { margin-top: 44px; text-align: center; font-size: 13px; color: #8a857a; }
+  footer a { color: #534ab7; text-decoration: none; border-bottom: 1px dashed #b4aec0; }
+  .note { margin-top: 14px; font-size: 12px; color: #b0aa9c; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+<nav class="switcher">
+  <button data-pat="" class="on">无暗纹（当前线上版）</button>
+  <button data-pat="pat-huiwen">一 · 回纹</button>
+  <button data-pat="pat-yunwen">二 · 卷云纹</button>
+  <button data-pat="pat-qushui">三 · 曲水纹</button>
+  <button data-pat="pat-jinge">四 · 锦格纹</button>
+  <span class="tip">点按钮实时切换，对比后告诉我选哪个</span>
+</nav>
+
+<div class="page">
+
+  <header>
+    <div class="seal">七</div>
+    <h1>七 七</h1>
+    <p class="signature">人心惟危，道心惟微，惟精惟一，允执厥中</p>
+    <div class="divider"></div>
+  </header>
+
+  <main class="cards">
+
+    <section class="card">
+      <h2>汉语言文学 <span class="tag blue">底色</span></h2>
+      <p>科班出身，与古典文学相处多年。相信文字的力量，也相信<em>审美</em>是机器时代最稀缺的手艺。</p>
+    </section>
+
+    <section class="card">
+      <h2>在学 AI 编程 <span class="tag purple">进行中</span></h2>
+      <p>从零开始，用 AI 结对写代码。不背语法，只做东西——让每一个学过的知识点，都长在真实的作品上。</p>
+    </section>
+
+    <section class="card">
+      <h2>古典文学互动文游 <span class="tag red">筹盘中</span></h2>
+      <p>正在做一个实验：让玩家走进经典文本，<em>亲口改写台词</em>，由 AI 续写剧情——但大方向，由一位看不见的「导演」守住。选哪部书开刀，还在挑。</p>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>联系我：<a href="mailto:pjq_1982@qq.com">pjq_1982@qq.com</a></p>
+    <p class="note">—— 此页由 AI 结对完成 · 我的第一行代码 ——</p>
+  </footer>
+
+</div>
+
+<script>
+  var btns = document.querySelectorAll(".switcher button");
+  btns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      btns.forEach(function (x) { x.classList.remove("on"); });
+      b.classList.add("on");
+      document.body.className = b.getAttribute("data-pat") || "";
+    });
+  });
+</script>
+</body>
+</html>
